@@ -46,13 +46,6 @@ pipeline {
         failure {
             echo 'Pipeline failed. Check the logs for details.'
         }
-        cleanup {
-            // Stop and remove the container, and clean up local docker images
-            sh """
-                docker stop test-container || true
-                docker rm test-container || true
-                docker system prune -f
-            """
-        }
+        
     }
 }
