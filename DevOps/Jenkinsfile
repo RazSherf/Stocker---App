@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'jenkins', url: "${GITHUB_REPO_URL}"
+                git branch: 'main', url: "${GITHUB_REPO_URL}"
             }
         }
 
