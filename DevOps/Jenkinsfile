@@ -16,6 +16,14 @@ pipeline {
             }
         }
 
+        stage('Clean Old Images') {
+            steps {
+                script {
+                    sh "docker rmi -f ${DOCKER_IMAGE}:${DOCKER_TAG} || true"
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 script {
