@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'test'
+        DOCKER_IMAGE = 'RazSh'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
         GITHUB_REPO_URL = 'https://github.com/RazSherf/Stocker'
         AWS_REGION = 'us-east-1'
