@@ -4,7 +4,7 @@ products_bp = Blueprint('products', __name__)
 
 @products_bp.route('/api/products', methods=['GET'])
 def get_products():
-    return jsonify({"message": "Hello !!"})
+    return jsonify({"message": "Hello11 !!"})
 
 @products_bp.route('/api/products/<product_id>', methods=['GET'])
 def get_product(product_id):
