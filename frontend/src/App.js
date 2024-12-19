@@ -14,6 +14,9 @@ function App() {
   return (
     <ThemeProvider value={{ darkMode, toggleDarkMode }}>
       <div className={`App ${darkMode ? 'dark-mode' : ''}`}>
+        <div>
+          <p>Test</p>
+        </div>
         <Navbar />
         <main>
           <ProductList />
