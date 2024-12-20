@@ -16,7 +16,9 @@ services:
       - app-network
 
   backend:
-    image: "471112618713.dkr.ecr.us-east-1.amazonaws.com/project-repo-app:${BUILD_NUMBER}"  
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: backend
     restart: always
     environment:
@@ -26,6 +28,21 @@ services:
       - "5000:5000"
     depends_on:
       - mongodb
+    networks:
+      - app-network
+  
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: always
+    environment:
+      REACT_APP_BACKEND_API_URL: http://localhost:5000
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
     networks:
       - app-network
 

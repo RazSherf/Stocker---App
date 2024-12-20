@@ -1,30 +1,26 @@
-import React, { useState } from 'react';
-import Navbar from './components/Navbar';
-import ProductList from './components/ProductList';
-import { ThemeProvider } from './contexts/ThemeContext';
-import './App.css';
+import React, { useState } from "react"
+import Navbar from "./components/Navbar"
+import ProductList from "./components/ProductList"
+import { ThemeProvider } from "./contexts/ThemeContext"
+import "./App.css"
 
 function App() {
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(false)
 
   const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
+    setDarkMode(!darkMode)
+  }
 
   return (
     <ThemeProvider value={{ darkMode, toggleDarkMode }}>
-      <div className={`App ${darkMode ? 'dark-mode' : ''}`}>
-        <div>
-          <p>Test</p>
-        </div>
+      <div className={`App ${darkMode ? "dark-mode" : ""}`}>
         <Navbar />
         <main>
           <ProductList />
         </main>
       </div>
     </ThemeProvider>
-  );
+  )
 }
 
-export default App;
-
+export default App

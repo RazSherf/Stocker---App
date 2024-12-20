@@ -1,83 +1,162 @@
 .productList {
-    margin-top: 30px;
-    padding: 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s;
-  }
-  
-  .darkMode {
-    background-color: #2c3e50;
-    color: #ecf0f1;
-  }
-  
-  .table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    margin-bottom: 20px;
-    overflow: hidden;
-    border-radius: 8px;
-  }
-  
-  .table th,
-  .table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #dee2e6;
-  }
-  
-  .table th {
-    background-color: #3498db;
-    color: white;
-    font-weight: bold;
-    text-transform: uppercase;
-  }
-  
-  .table tr:nth-child(even) {
-    background-color: #f2f2f2;
-  }
-  
-  .table tr:hover {
-    background-color: #e9ecef;
-  }
-  
-  .darkMode .table th {
-    background-color: #34495e;
-  }
-  
-  .darkMode .table tr:nth-child(even) {
-    background-color: #34495e;
-  }
-  
-  .darkMode .table tr:hover {
-    background-color: #2c3e50;
-  }
-  
-  .downloadButton {
-    padding: 12px 24px;
-    background-color: #2ecc71;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    transition: background-color 0.3s, transform 0.3s;
-  }
-  
-  .downloadButton:hover {
-    background-color: #27ae60;
-    transform: translateY(-2px);
-  }
-  
-  .darkMode .downloadButton {
-    background-color: #3498db;
-  }
-  
-  .darkMode .downloadButton:hover {
-    background-color: #2980b9;
-  }
-  
-  
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  font-size: 1.2em;
+}
+
+.errorMessage {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.actionButton {
+  background-color: #2196f3;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.actionButton:hover {
+  background-color: #1976d2;
+}
+
+.form {
+  background-color: #f5f5f5;
+  padding: 20px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.formGroup {
+  margin-bottom: 15px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 10px;
+}
+
+.submitButton {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submitButton:hover {
+  background-color: #388e3c;
+}
+
+.cancelButton {
+  background-color: #f44336;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancelButton:hover {
+  background-color: #d32f2f;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.table th,
+.table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+}
+
+.table tr:hover {
+  background-color: #f5f5f5;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.updateButton {
+  background-color: #ff9800;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.updateButton:hover {
+  background-color: #f57c00;
+}
+
+.deleteButton {
+  background-color: #f44336;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.deleteButton:hover {
+  background-color: #d32f2f;
+}
+
+.downloadButton {
+  background-color: #673ab7;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.downloadButton:hover {
+  background-color: #5e35b1;
+}
+
