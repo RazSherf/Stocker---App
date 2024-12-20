@@ -24,7 +24,7 @@ def get_products():
         products = list(products_collection.find())  # Fetch all products
         return jsonify({"success": True, "products": loads(dumps(products))}), 200
     except Exception as e:
-        return jsonify({"success!": False, "message": str(e)}), 500
+        return jsonify({"success!!": False, "message": str(e)}), 500
 
 @products_bp.route('/api/products', methods=['POST'])
 def add_product():
