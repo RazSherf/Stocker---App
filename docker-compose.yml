@@ -16,8 +16,7 @@ services:
       - app-network
 
   backend:
-    build:
-      context: ./backend
+    image: "471112618713.dkr.ecr.us-east-1.amazonaws.com/project-repo-app:${BUILD_NUMBER}"  
     container_name: backend
     restart: always
     environment:
