@@ -1,363 +1,300 @@
 import React, { useState, useEffect } from "react"
-import styles from "./ProductList.module.css"
+import { Search, Plus, Edit2, Trash2, X } from "lucide-react"
 
-function ProductList() {
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"
+
+const Modal = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg w-full max-w-md p-6 relative">
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+        >
+          <X size={20} />
+        </button>
+        <h2 className="text-xl font-semibold mb-4">{title}</h2>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+const Toast = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000)
+    return () => clearTimeout(timer)
+  }, [onClose])
+
+  return (
+    <div
+      className={`fixed top-4 right-4 z-50 animate-slide-in-right ${
+        type === "error" ? "bg-red-500" : "bg-emerald-500"
+      } text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2`}
+    >
+      <span>{message}</span>
+      <button onClick={onClose} className="text-white hover:text-gray-200">
+        <X size={18} />
+      </button>
+    </div>
+  )
+}
+
+const ProductList = () => {
   const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [showAddForm, setShowAddForm] = useState(false)
-  const [showUpdateForm, setShowUpdateForm] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [currentProduct, setCurrentProduct] = useState(null)
+  const [toast, setToast] = useState(null)
+
   const [formData, setFormData] = useState({
     name: "",
-    quantity: "",
-    category: "",
+    price: "",
+    description: "",
   })
-  // TODO fix the API calls, fix add product form
+
   useEffect(() => {
     fetchProducts()
   }, [])
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/products")
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
+      const response = await fetch(`${API_BASE_URL}/api/products`)
       const data = await response.json()
-      const transformedProducts = data.products.map((product) => ({
-        ...product,
-        id: product._id?.$oid || product._id,
-      }))
-      setProducts(transformedProducts)
-      setLoading(false)
-    } catch (err) {
-      console.error("Error fetching products:", err)
-      setError("Failed to fetch products. Please try again later.")
-      setLoading(false)
+      setProducts(data)
+    } catch (error) {
+      showToast("Error fetching products", "error")
     }
   }
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const showToast = (message, type = "success") => {
+    setToast({ message, type })
   }
 
-  const validateFormData = () => {
-    if (!formData.name.trim()) {
-      throw new Error("Product name is required")
-    }
-    if (
-      !formData.quantity ||
-      isNaN(formData.quantity) ||
-      parseInt(formData.quantity) < 0
-    ) {
-      throw new Error("Please enter a valid quantity")
-    }
-    if (!formData.category.trim()) {
-      throw new Error("Category is required")
-    }
-  }
-
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      quantity: "",
-      category: "",
-    })
-    setShowAddForm(false)
-    setShowUpdateForm(false)
-    setSelectedProduct(null)
-    setError(null)
-  }
-
-  const handleAddProduct = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setError(null)
-
     try {
-      validateFormData()
+      const method = currentProduct ? "PUT" : "POST"
+      const url = currentProduct
+        ? `${API_BASE_URL}/api/products/${currentProduct.id}`
+        : `${API_BASE_URL}/api/products`
 
-      const productData = {
-        ...formData,
-        quantity: parseInt(formData.quantity),
-      }
-
-      console.log("Sending product data:", productData)
-
-      const response = await fetch("http://localhost:5000/api/products", {
-        method: "POST",
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(productData),
+        body: JSON.stringify(formData),
       })
 
-      const responseData = await response.json()
-
-      if (!response.ok) {
-        throw new Error(responseData.message || "Failed to add product")
+      if (response.ok) {
+        showToast(
+          `Product ${currentProduct ? "updated" : "added"} successfully`
+        )
+        fetchProducts()
+        handleCloseModal()
       }
-
-      console.log("Product added successfully:", responseData)
-      await fetchProducts()
-      resetForm()
-    } catch (err) {
-      console.error("Error adding product:", err)
-      setError(err.message || "Failed to add product. Please try again.")
+    } catch (error) {
+      showToast("Error saving product", "error")
     }
   }
 
-  const handleUpdateClick = (product) => {
-    setSelectedProduct(product)
-    setFormData({
-      name: product.name,
-      quantity: product.quantity.toString(),
-      category: product.category,
-    })
-    setShowUpdateForm(true)
-    setShowAddForm(false)
-  }
-
-  const handleUpdateProduct = async (e) => {
-    e.preventDefault()
-    if (!selectedProduct) return
-
-    try {
-      validateFormData()
-
-      const response = await fetch(
-        `http://localhost:5000/api/products/${selectedProduct.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...formData,
-            quantity: parseInt(formData.quantity),
-          }),
-        }
-      )
-
-      const responseData = await response.json()
-
-      if (!response.ok) {
-        throw new Error(responseData.message || "Failed to update product")
-      }
-
-      await fetchProducts()
-      resetForm()
-    } catch (err) {
-      console.error("Error updating product:", err)
-      setError(err.message || "Failed to update product. Please try again.")
-    }
-  }
-
-  const handleDeleteProduct = async (productId) => {
+  const handleDelete = async (productId) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/products/${productId}`,
+          `${API_BASE_URL}/api/products/${productId}`,
           {
             method: "DELETE",
           }
         )
 
-        if (!response.ok) {
-          throw new Error("Failed to delete product")
+        if (response.ok) {
+          showToast("Product deleted successfully")
+          fetchProducts()
         }
-
-        await fetchProducts()
-      } catch (err) {
-        console.error("Error deleting product:", err)
-        setError("Failed to delete product. Please try again.")
+      } catch (error) {
+        showToast("Error deleting product", "error")
       }
     }
   }
 
-  const downloadProductList = () => {
-    const productListCSV = products
-      .map(
-        (product) =>
-          `${product.id},${product.name},${product.quantity},${product.category}`
-      )
-      .join("\n")
-
-    const blob = new Blob([`ID,Name,Quantity,Category\n${productListCSV}`], {
-      type: "text/csv",
+  const handleEdit = (product) => {
+    setCurrentProduct(product)
+    setFormData({
+      name: product.name,
+      price: product.price,
+      description: product.description,
     })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = "product_list.csv"
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    setIsEditModalOpen(true)
   }
 
-  if (loading) {
-    return <div className={styles.loading}>Loading...</div>
+  const handleCloseModal = () => {
+    setIsAddModalOpen(false)
+    setIsEditModalOpen(false)
+    setCurrentProduct(null)
+    setFormData({ name: "", price: "", description: "" })
   }
+
+  const ProductForm = () => (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Name
+        </label>
+        <input
+          type="text"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          required
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Price
+        </label>
+        <input
+          type="number"
+          value={formData.price}
+          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          required
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Description
+        </label>
+        <textarea
+          value={formData.description}
+          onChange={(e) =>
+            setFormData({ ...formData, description: e.target.value })
+          }
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          rows="3"
+        />
+      </div>
+      <button
+        type="submit"
+        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 transform transition-all duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      >
+        {currentProduct ? "Update Product" : "Add Product"}
+      </button>
+    </form>
+  )
 
   return (
-    <div className={styles.productList}>
-      <h2>Current Inventory</h2>
-
-      {error && <div className={styles.errorMessage}>{error}</div>}
-
-      <button
-        onClick={() => {
-          console.log("Add button clicked") // Add this line
-          setShowAddForm(!showAddForm)
-          setShowUpdateForm(false)
-          resetForm()
-        }}
-        className={styles.actionButton}
-      >
-        {showAddForm ? "Cancel Add" : "Add New Product"}
-      </button>
-
-      {showAddForm && (
-        <form onSubmit={handleAddProduct} className={styles.form}>
-          <h3>Add New Product</h3>
-          <div className={styles.formGroup}>
-            <label>Name:</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              required
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label>Quantity:</label>
-            <input
-              type="number"
-              name="quantity"
-              min="0"
-              value={formData.quantity}
-              onChange={handleInputChange}
-              required
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label>Category:</label>
-            <input
-              type="text"
-              name="category"
-              value={formData.category}
-              onChange={handleInputChange}
-              required
-              className={styles.input}
-            />
-          </div>
-          <button type="submit" className={styles.submitButton}>
-            Add Product
-          </button>
-        </form>
-      )}
-
-      {showUpdateForm && (
-        <form onSubmit={handleUpdateProduct} className={styles.form}>
-          <h3>Update Product</h3>
-          <div className={styles.formGroup}>
-            <label>Name:</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              required
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label>Quantity:</label>
-            <input
-              type="number"
-              name="quantity"
-              min="0"
-              value={formData.quantity}
-              onChange={handleInputChange}
-              required
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label>Category:</label>
-            <input
-              type="text"
-              name="category"
-              value={formData.category}
-              onChange={handleInputChange}
-              required
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.buttonGroup}>
-            <button type="submit" className={styles.submitButton}>
-              Update Product
-            </button>
-            <button
-              type="button"
-              onClick={resetForm}
-              className={styles.cancelButton}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      )}
-
-      <div className={styles.tableContainer}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Quantity</th>
-              <th>Category</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td>{product.id}</td>
-                <td>{product.name}</td>
-                <td>{product.quantity}</td>
-                <td>{product.category}</td>
-                <td className={styles.actions}>
-                  <button
-                    onClick={() => handleUpdateClick(product)}
-                    className={styles.updateButton}
-                  >
-                    Update
-                  </button>
-                  <button
-                    onClick={() => handleDeleteProduct(product.id)}
-                    className={styles.deleteButton}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="max-w-6xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-8">
+        <div className="relative flex-1 max-w-md">
+          <Search
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+            size={20}
+          />
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+          />
+        </div>
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transform transition-all duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md"
+        >
+          <Plus size={20} />
+          Add Product
+        </button>
       </div>
 
-      <button onClick={downloadProductList} className={styles.downloadButton}>
-        Download Product List
-      </button>
+      <div className="bg-white rounded-xl shadow-md border border-gray-100">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                  Name
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                  Price
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                  Description
+                </th>
+                <th className="px-6 py-4 text-right text-sm font-semibold text-gray-600">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {filteredProducts.map((product) => (
+                <tr
+                  key={product.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-700">
+                    {product.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+                    ${product.price}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {product.description}
+                  </td>
+                  <td className="px-6 py-4 text-right space-x-3">
+                    <button
+                      onClick={() => handleEdit(product)}
+                      className="text-blue-600 hover:text-blue-800 transition-colors"
+                    >
+                      <Edit2 size={18} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(product.id)}
+                      className="text-red-500 hover:text-red-700 transition-colors"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p>Test</p>
+        </div>
+      </div>
+
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={handleCloseModal}
+        title="Add New Product"
+      >
+        <ProductForm />
+      </Modal>
+
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={handleCloseModal}
+        title="Edit Product"
+      >
+        <ProductForm />
+      </Modal>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }
