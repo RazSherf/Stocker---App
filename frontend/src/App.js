@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import Navbar from "./components/Navbar"
-import ProductManagement from "./components/ProductList"
+import ProductList from "./components/ProductList"
 import { ThemeProvider } from "./contexts/ThemeContext"
 import "./App.css"
 
@@ -16,7 +16,7 @@ function App() {
       <div className={`App ${darkMode ? "dark-mode" : ""}`}>
         <Navbar />
         <main>
-          <ProductManagement />
+          <ProductList />
         </main>
       </div>
     </ThemeProvider>

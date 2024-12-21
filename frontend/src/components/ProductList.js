@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react"
-import { Search, Plus, Edit2, Trash2, X } from "lucide-react"
+import { Search, Plus, Pencil, Trash, X } from "lucide-react"
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"
 
+// TODO - fix modal input focus
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null
 
@@ -64,7 +65,7 @@ const ProductList = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/products`)
       const data = await response.json()
-      setProducts(data)
+      setProducts(data.products)
     } catch (error) {
       showToast("Error fetching products", "error")
     }
@@ -78,12 +79,16 @@ const ProductList = () => {
     setToast({ message, type })
   }
 
+  const handleFocus = (event) => {
+    event.target.focus()
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
       const method = currentProduct ? "PUT" : "POST"
       const url = currentProduct
-        ? `${API_BASE_URL}/api/products/${currentProduct.id}`
+        ? `${API_BASE_URL}/api/products/${currentProduct._id.$oid}`
         : `${API_BASE_URL}/api/products`
 
       const response = await fetch(url, {
@@ -98,8 +103,10 @@ const ProductList = () => {
         showToast(
           `Product ${currentProduct ? "updated" : "added"} successfully`
         )
-        fetchProducts()
+        await fetchProducts()
         handleCloseModal()
+      } else {
+        throw new Error("Failed to save product")
       }
     } catch (error) {
       showToast("Error saving product", "error")
@@ -118,7 +125,9 @@ const ProductList = () => {
 
         if (response.ok) {
           showToast("Product deleted successfully")
-          fetchProducts()
+          await fetchProducts()
+        } else {
+          throw new Error("Failed to delete product")
         }
       } catch (error) {
         showToast("Error deleting product", "error")
@@ -143,53 +152,67 @@ const ProductList = () => {
     setFormData({ name: "", price: "", description: "" })
   }
 
-  const ProductForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Name
-        </label>
-        <input
-          type="text"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-          required
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Price
-        </label>
-        <input
-          type="number"
-          value={formData.price}
-          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-          required
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description
-        </label>
-        <textarea
-          value={formData.description}
-          onChange={(e) =>
-            setFormData({ ...formData, description: e.target.value })
-          }
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-          rows="3"
-        />
-      </div>
-      <button
-        type="submit"
-        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 transform transition-all duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-      >
-        {currentProduct ? "Update Product" : "Add Product"}
-      </button>
-    </form>
-  )
+  const ProductForm = () => {
+    const handleChange = (e) => {
+      const { name, value } = e.target
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }))
+    }
+
+    return (
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Name
+          </label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Price
+          </label>
+          <input
+            type="number"
+            name="price"
+            value={formData.price}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            rows="3"
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 transform transition-all duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          {currentProduct ? "Update Product" : "Add Product"}
+        </button>
+      </form>
+    )
+  }
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -204,6 +227,7 @@ const ProductList = () => {
             placeholder="Search products..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={handleFocus}
             className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
           />
         </div>
@@ -221,16 +245,16 @@ const ProductList = () => {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50">
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-600">
                   Name
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-600">
                   Price
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-600">
                   Description
                 </th>
-                <th className="px-6 py-4 text-right text-sm font-semibold text-gray-600">
+                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-600">
                   Actions
                 </th>
               </tr>
@@ -238,7 +262,7 @@ const ProductList = () => {
             <tbody className="divide-y divide-gray-100">
               {filteredProducts.map((product) => (
                 <tr
-                  key={product.id}
+                  key={product._id.$oid} // Changed from id to _id
                   className="hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-700">
@@ -250,25 +274,24 @@ const ProductList = () => {
                   <td className="px-6 py-4 text-gray-600">
                     {product.description}
                   </td>
-                  <td className="px-6 py-4 text-right space-x-3">
+                  <td className="px-6 py-4 text-center space-x-3">
                     <button
                       onClick={() => handleEdit(product)}
                       className="text-blue-600 hover:text-blue-800 transition-colors"
                     >
-                      <Edit2 size={18} />
+                      <Pencil size={18} strokeWidth={2.5} />
                     </button>
                     <button
-                      onClick={() => handleDelete(product.id)}
+                      onClick={() => handleDelete(product._id.$oid)} // Changed from id to _id
                       className="text-red-500 hover:text-red-700 transition-colors"
                     >
-                      <Trash2 size={18} />
+                      <Trash size={18} strokeWidth={2.5} />
                     </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <p>Test</p>
         </div>
       </div>
 
