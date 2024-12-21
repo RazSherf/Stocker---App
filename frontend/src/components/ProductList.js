@@ -1,308 +1,325 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react"
+import { Search, Plus, Pencil, Trash, X } from "lucide-react"
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"
+
+// TODO - fix modal input focus
+const Modal = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg w-full max-w-md p-6 relative">
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+        >
+          <X size={20} />
+        </button>
+        <h2 className="text-xl font-semibold mb-4">{title}</h2>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+const Toast = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000)
+    return () => clearTimeout(timer)
+  }, [onClose])
+
+  return (
+    <div
+      className={`fixed top-4 right-4 z-50 animate-slide-in-right ${
+        type === "error" ? "bg-red-500" : "bg-emerald-500"
+      } text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2`}
+    >
+      <span>{message}</span>
+      <button onClick={onClose} className="text-white hover:text-gray-200">
+        <X size={18} />
+      </button>
+    </div>
+  )
+}
 
 const ProductList = () => {
-  const [products, setProducts] = useState([]);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [isAddingProduct, setIsAddingProduct] = useState(false);
-  const [newProduct, setNewProduct] = useState({ name: '', price: '', description: '' });
+  const [products, setProducts] = useState([])
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [currentProduct, setCurrentProduct] = useState(null)
+  const [toast, setToast] = useState(null)
+
+  const [formData, setFormData] = useState({
+    name: "",
+    price: "",
+    description: "",
+  })
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    fetchProducts()
+  }, [])
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/products');
-      const data = await response.json();
-      if (data.success) {
-        setProducts(data.products);
-      } else {
-        setError(data.message);
-      }
-    } catch (err) {
-      setError('Failed to fetch products');
-    } finally {
-      setLoading(false);
+      const response = await fetch(`${API_BASE_URL}/api/products`)
+      const data = await response.json()
+      setProducts(data.products)
+    } catch (error) {
+      showToast("Error fetching products", "error")
     }
-  };
+  }
+
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const showToast = (message, type = "success") => {
+    setToast({ message, type })
+  }
+
+  const handleFocus = (event) => {
+    event.target.focus()
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    try {
+      const method = currentProduct ? "PUT" : "POST"
+      const url = currentProduct
+        ? `${API_BASE_URL}/api/products/${currentProduct._id.$oid}`
+        : `${API_BASE_URL}/api/products`
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (response.ok) {
+        showToast(
+          `Product ${currentProduct ? "updated" : "added"} successfully`
+        )
+        await fetchProducts()
+        handleCloseModal()
+      } else {
+        throw new Error("Failed to save product")
+      }
+    } catch (error) {
+      showToast("Error saving product", "error")
+    }
+  }
 
   const handleDelete = async (productId) => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/products/${productId}`, {
-        method: 'DELETE',
-      });
-      const data = await response.json();
-      if (data.success) {
-        setProducts(products.filter(product => product._id !== productId));
-      } else {
-        setError(data.message);
-      }
-    } catch (err) {
-      setError('Failed to delete product');
-    }
-  };
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/products/${productId}`,
+          {
+            method: "DELETE",
+          }
+        )
 
-  const handleUpdate = async (productId, updatedData) => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/products/${productId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedData),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setProducts(products.map(product => 
-          product._id === productId ? data.product : product
-        ));
-        setEditingProduct(null);
-      } else {
-        setError(data.message);
+        if (response.ok) {
+          showToast("Product deleted successfully")
+          await fetchProducts()
+        } else {
+          throw new Error("Failed to delete product")
+        }
+      } catch (error) {
+        showToast("Error deleting product", "error")
       }
-    } catch (err) {
-      setError('Failed to update product');
     }
-  };
+  }
 
-  const handleAddProduct = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('http://localhost:5000/api/products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newProduct),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setProducts([...products, data.product]);
-        setNewProduct({ name: '', price: '', description: '' });
-        setIsAddingProduct(false);
-      } else {
-        setError(data.message);
-      }
-    } catch (err) {
-      setError('Failed to add product');
+  const handleEdit = (product) => {
+    setCurrentProduct(product)
+    setFormData({
+      name: product.name,
+      price: product.price,
+      description: product.description,
+    })
+    setIsEditModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsAddModalOpen(false)
+    setIsEditModalOpen(false)
+    setCurrentProduct(null)
+    setFormData({ name: "", price: "", description: "" })
+  }
+
+  const ProductForm = () => {
+    const handleChange = (e) => {
+      const { name, value } = e.target
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }))
     }
-  };
+
+    return (
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Name
+          </label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Price
+          </label>
+          <input
+            type="number"
+            name="price"
+            value={formData.price}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            rows="3"
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 transform transition-all duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          {currentProduct ? "Update Product" : "Add Product"}
+        </button>
+      </form>
+    )
+  }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      {/* Header with Add Product button - Always visible */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        marginBottom: '20px',
-        padding: '15px',
-        backgroundColor: '#fff',
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <h2 style={{ margin: 0, fontSize: '1.5em' }}>Products</h2>
-        <button 
-          onClick={() => setIsAddingProduct(true)}
-          style={{
-            backgroundColor: '#3498db',
-            color: 'white',
-            border: 'none',
-            padding: '8px 16px',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
+    <div className="max-w-6xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-8">
+        <div className="relative flex-1 max-w-md">
+          <Search
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+            size={20}
+          />
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={handleFocus}
+            className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+          />
+        </div>
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transform transition-all duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md"
         >
+          <Plus size={20} />
           Add Product
         </button>
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div style={{ 
-          padding: '10px', 
-          backgroundColor: '#ffebee', 
-          color: '#c62828',
-          borderRadius: '4px',
-          marginBottom: '20px' 
-        }}>
-          {error}
-        </div>
-      )}
-
-      {/* Loading Message */}
-      {loading && (
-        <div style={{ textAlign: 'center', padding: '20px' }}>
-          Loading products...
-        </div>
-      )}
-
-      {/* Add Product Form */}
-      {isAddingProduct && (
-        <div style={{ 
-          marginBottom: '20px',
-          padding: '20px',
-          backgroundColor: 'white',
-          borderRadius: '8px',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-        }}>
-          <form onSubmit={handleAddProduct}>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px' }}>Name:</label>
-              <input
-                type="text"
-                value={newProduct.name}
-                onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
-                style={{ 
-                  width: '100%',
-                  padding: '8px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px'
-                }}
-                required
-              />
-            </div>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px' }}>Price:</label>
-              <input
-                type="number"
-                value={newProduct.price}
-                onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
-                style={{ 
-                  width: '100%',
-                  padding: '8px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px'
-                }}
-                required
-              />
-            </div>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px' }}>Description:</label>
-              <textarea
-                value={newProduct.description}
-                onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
-                style={{ 
-                  width: '100%',
-                  padding: '8px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px'
-                }}
-              />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              <button
-                type="button"
-                onClick={() => setIsAddingProduct(false)}
-                style={{
-                  padding: '8px 16px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  backgroundColor: '#f8f9fa'
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#3498db',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Save Product
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Products List */}
-      <div style={{ 
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        padding: '20px'
-      }}>
-        {!loading && products.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
-            No products found. Click the 'Add Product' button to create one.
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            {products.map((product) => (
-              <div 
-                key={product._id} 
-                style={{
-                  padding: '15px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    {editingProduct === product._id ? (
-                      <input
-                        type="text"
-                        value={product.name}
-                        onChange={(e) => handleUpdate(product._id, { name: e.target.value })}
-                        style={{ 
-                          padding: '4px',
-                          border: '1px solid #ddd',
-                          borderRadius: '4px'
-                        }}
-                      />
-                    ) : (
-                      <h3 style={{ margin: '0 0 5px 0' }}>{product.name}</h3>
-                    )}
-                    <p style={{ margin: 0, color: '#666' }}>${product.price}</p>
-                    {product.description && (
-                      <p style={{ margin: '5px 0 0 0', fontSize: '0.9em', color: '#666' }}>
-                        {product.description}
-                      </p>
-                    )}
-                  </div>
-                  <div style={{ display: 'flex', gap: '10px' }}>
+      <div className="bg-white rounded-xl shadow-md border border-gray-100">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-600">
+                  Name
+                </th>
+                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-600">
+                  Price
+                </th>
+                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-600">
+                  Description
+                </th>
+                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-600">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {filteredProducts.map((product) => (
+                <tr
+                  key={product._id.$oid} // Changed from id to _id
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-700">
+                    {product.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+                    ${product.price}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {product.description}
+                  </td>
+                  <td className="px-6 py-4 text-center space-x-3">
                     <button
-                      onClick={() => setEditingProduct(editingProduct === product._id ? null : product._id)}
-                      style={{
-                        padding: '6px 12px',
-                        border: '1px solid #ddd',
-                        borderRadius: '4px',
-                        backgroundColor: '#f8f9fa',
-                        cursor: 'pointer'
-                      }}
+                      onClick={() => handleEdit(product)}
+                      className="text-blue-600 hover:text-blue-800 transition-colors"
                     >
-                      Edit
+                      <Pencil size={18} strokeWidth={2.5} />
                     </button>
                     <button
-                      onClick={() => handleDelete(product._id)}
-                      style={{
-                        padding: '6px 12px',
-                        backgroundColor: '#ffebee',
-                        color: '#c62828',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                      }}
+                      onClick={() => handleDelete(product._id.$oid)} // Changed from id to _id
+                      className="text-red-500 hover:text-red-700 transition-colors"
                     >
-                      Delete
+                      <Trash size={18} strokeWidth={2.5} />
                     </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  );
-};
 
-export default ProductList;
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={handleCloseModal}
+        title="Add New Product"
+      >
+        <ProductForm />
+      </Modal>
+
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={handleCloseModal}
+        title="Edit Product"
+      >
+        <ProductForm />
+      </Modal>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </div>
+  )
+}
+
+export default ProductList
