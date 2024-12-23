@@ -66,7 +66,6 @@ const ProductForm = ({
   initialData,
   isEdit,
 }) => {
-  // Ensure initialData always has a valid default structure
   const defaultData = {
     name: "",
     category: "",
@@ -75,10 +74,9 @@ const ProductForm = ({
     quantity: 0
   };
 
-  // Merge initialData with defaultData, ensuring all fields exist
   const [formData, setFormData] = useState(() => ({
     ...defaultData,
-    ...(initialData || {})  // Only spread initialData if it exists
+    ...(initialData || {})
   }));
 
   const handleChange = (e) => {
@@ -202,11 +200,11 @@ const ProductList = () => {
         throw new Error('Failed to fetch products');
       }
       const data = await response.json();
-      setProducts(data.products || []); // Ensure we always set an array
+      setProducts(data.products || []);
     } catch (error) {
       console.error('Error fetching products:', error);
       showToast("Error fetching products", "error");
-      setProducts([]); // Set empty array on error
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -313,47 +311,47 @@ const ProductList = () => {
       ) : (
         <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full border-collapse table-auto">
               <thead>
                 <tr className="bg-gray-50/80">
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
-                    Name
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 w-1/6">
+                    <div className="text-left">Name</div>
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
-                    Category
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 w-1/6">
+                    <div className="text-left">Category</div>
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
-                    Price
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 w-1/12">
+                    <div className="text-left">Price</div>
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
-                    Description
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 w-1/3">
+                    <div className="text-left">Description</div>
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
-                    Quantity
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 w-1/12">
+                    <div className="text-left">Quantity</div>
                   </th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-gray-600">
-                    Actions
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-600 w-1/12">
+                    <div className="text-right">Actions</div>
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredProducts.map((product) => (
-                  <tr key={product._id} className="border-t border-gray-100">
-                    <td className="px-6 py-4">{product.name}</td>
-                    <td className="px-6 py-4">{product.category}</td>
-                    <td className="px-6 py-4">${product.price}</td>
-                    <td className="px-6 py-4">{product.description}</td>
-                    <td className="px-6 py-4">{product.quantity}</td>
-                    <td className="px-6 py-4 text-right">
+                  <tr key={product._id} className="border-t border-gray-100 hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm text-left">{product.name}</td>
+                    <td className="px-6 py-4 text-sm text-left">{product.category}</td>
+                    <td className="px-6 py-4 text-sm text-left">${product.price}</td>
+                    <td className="px-6 py-4 text-sm text-left">{product.description}</td>
+                    <td className="px-6 py-4 text-sm text-left">{product.quantity}</td>
+                    <td className="px-6 py-4 text-sm text-right">
                       <button
                         onClick={() => handleEdit(product)}
-                        className="text-blue-500 hover:text-blue-700 p-1"
+                        className="text-blue-500 hover:text-blue-700 p-1 inline-flex items-center"
                       >
                         <Pencil size={18} />
                       </button>
                       <button
                         onClick={() => handleDelete(product._id)}
-                        className="ml-4 text-red-500 hover:text-red-700 p-1"
+                        className="ml-4 text-red-500 hover:text-red-700 p-1 inline-flex items-center"
                       >
                         <Trash size={18} />
                       </button>
@@ -366,7 +364,6 @@ const ProductList = () => {
         </div>
       )}
 
-      {/* Add/Edit Product Modal */}
       <Modal
         isOpen={isAddModalOpen || isEditModalOpen}
         onClose={handleCloseModal}
@@ -379,7 +376,6 @@ const ProductList = () => {
         />
       </Modal>
 
-      {/* Toast Notifications */}
       {toast && (
         <Toast
           message={toast.message}
