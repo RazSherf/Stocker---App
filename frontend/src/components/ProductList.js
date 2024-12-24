@@ -8,6 +8,7 @@ import {
   PackageOpen,
   DollarSign,
   AlertCircle,
+  Boxes,
 } from "lucide-react"
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"
@@ -64,7 +65,13 @@ const Toast = ({ message, type, onClose }) => {
 // Separate ProductForm component
 const ProductForm = ({
   onSubmit,
-  initialData = { name: "", price: "", description: "" },
+  initialData = {
+    name: "",
+    price: "",
+    description: "",
+    category: "",
+    stock: 0,
+  },
   isEdit,
 }) => {
   const [formData, setFormData] = useState(initialData)
@@ -126,7 +133,27 @@ const ProductForm = ({
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             required
             min="0"
-            step="0.01"
+            step="0.1"
+          />
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Category
+        </label>
+        <div className="relative">
+          <PackageOpen
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            size={18}
+          />
+          <input
+            type="text"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            required
           />
         </div>
       </div>
@@ -143,6 +170,27 @@ const ProductForm = ({
           rows="3"
           placeholder="Enter product description..."
         />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Stock
+        </label>
+        <div className="relative">
+          <Boxes
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            size={18}
+          />
+          <input
+            type="number"
+            name="stock"
+            value={formData.stock}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            min="0"
+            step="1"
+          />
+        </div>
       </div>
       <button
         type="submit"
@@ -292,7 +340,13 @@ const ProductList = () => {
                   Price
                 </th>
                 <th className="px-6 py-4 text-center text-sm font-semibold text-gray-600">
+                  Category
+                </th>
+                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-600">
                   Description
+                </th>
+                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-600">
+                  Stock
                 </th>
                 <th className="px-6 py-4 text-center text-sm font-semibold text-gray-600">
                   Actions
@@ -332,7 +386,13 @@ const ProductList = () => {
                       ${parseFloat(product.price).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-gray-600 truncate max-w-xs">
+                      {product.category}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 truncate max-w-xs">
                       {product.description}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 truncate max-w-xs">
+                      {product.stock}
                     </td>
                     <td className="px-6 py-4 text-right space-x-3">
                       <button
@@ -374,6 +434,8 @@ const ProductList = () => {
           initialData={{
             name: currentProduct?.name || "",
             price: currentProduct?.price || "",
+            category: currentProduct?.category || "",
+            stock: currentProduct?.stock || "",
             description: currentProduct?.description || "",
           }}
           isEdit={true}
