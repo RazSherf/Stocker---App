@@ -1,4 +1,5 @@
 import React, { useState } from "react"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import Navbar from "./components/Navbar"
 import ProductList from "./components/ProductList"
 import { ThemeProvider } from "./contexts/ThemeContext"
@@ -13,12 +14,17 @@ function App() {
 
   return (
     <ThemeProvider value={{ darkMode, toggleDarkMode }}>
-      <div className={`App ${darkMode ? "dark-mode" : ""}`}>
-        <Navbar />
-        <main>
-          <ProductList />
-        </main>
-      </div>
+      <Router>
+        <div className={`App ${darkMode ? "dark-mode" : ""}`}>
+          <Navbar />
+          <main>
+            <Routes>
+              <Route path="/inventory" element={<ProductList />} />
+              {/* Add other routes here if needed */}
+            </Routes>
+          </main>
+        </div>
+      </Router>
     </ThemeProvider>
   )
 }

@@ -24,6 +24,7 @@ products_bp = Blueprint('products', __name__)
 def get_products():
     try:
         products = list(products_collection.find())  # Fetch all products
+        
         # Use RELAXED_JSON_OPTIONS for better ObjectId handling
         return jsonify({"success!": True, "products": loads(dumps(products, json_options=RELAXED_JSON_OPTIONS))}), 200
     except Exception as e:
@@ -33,8 +34,12 @@ def get_products():
 def add_product():
     try:
         product_data = request.json
+        if 'stock' not in product_data:
+            product_data['stock'] = 0
+
         # Insert the product into MongoDB
         result = products_collection.insert_one(product_data)
+        
         return jsonify({
             "success": True,
             "product_id": str(result.inserted_id),
