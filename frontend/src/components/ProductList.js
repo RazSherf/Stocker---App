@@ -9,7 +9,10 @@ import {
   DollarSign,
   AlertCircle,
   Boxes,
+  History,
+  ArrowUpDown,
 } from "lucide-react"
+import { RestockDialog, RestockHistory } from "./Restoks.js"
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"
 
@@ -302,6 +305,20 @@ const ProductList = () => {
     setCurrentProduct(null)
   }
 
+  const handleRestock = (productId, newStockLevel) => {
+    setProducts(
+      products.map((product) =>
+        product._id === productId
+          ? { ...product, stock: newStockLevel }
+          : product
+      )
+    )
+  }
+
+  if (loading) {
+    return <div className="text-center py-8">Loading...</div>
+  }
+
   return (
     <div className="max-w-6xl mx-auto p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
@@ -395,6 +412,14 @@ const ProductList = () => {
                       {product.stock}
                     </td>
                     <td className="px-6 py-4 text-right space-x-3">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <RestockDialog
+                          product={product}
+                          onRestock={(data) =>
+                            handleRestock(product._id, data.new_stock_level)
+                          }
+                        />
+                      </td>
                       <button
                         onClick={() => handleEdit(product)}
                         className="text-blue-600 hover:text-blue-800 p-1 hover:bg-blue-50 rounded-lg transition-all inline-flex items-center"

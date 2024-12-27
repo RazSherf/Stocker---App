@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar"
 import ProductList from "./components/ProductList"
 import { ThemeProvider } from "./contexts/ThemeContext"
 import "./App.css"
+import { RestockHistory } from "./components/Restoks"
 
 function App() {
   const [darkMode, setDarkMode] = useState(false)
@@ -20,7 +21,7 @@ function App() {
           <main>
             <Routes>
               <Route path="/inventory" element={<ProductList />} />
-              {/* Add other routes here if needed */}
+              {/* <Route path="/restocking" element={<RestockHistory />} /> */}
             </Routes>
           </main>
         </div>
