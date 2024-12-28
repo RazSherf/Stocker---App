@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react"
-import { Plus, X } from "lucide-react"
+import { Plus, X, Boxes, History, AlertCircle } from "lucide-react"
+
 const API_BASE_URL =
   process.env.NODE_ENV === "production"
     ? "http://18.213.94.237:30002"
     : "http://192.168.49.2:30002"
+
+// uncomment for development
+// const API_BASE_URL = "http://18.213.94.237:30002"
 
 const Modal = ({ isOpen, onClose, children, title }) => {
   if (!isOpen) return null
@@ -25,8 +29,6 @@ const Modal = ({ isOpen, onClose, children, title }) => {
     </div>
   )
 }
-
-// RestockDialog Component
 export const RestockDialog = ({ product, onRestock }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [quantity, setQuantity] = useState("")
@@ -39,7 +41,7 @@ export const RestockDialog = ({ product, onRestock }) => {
       setIsLoading(true)
       setError("")
 
-      const nQuantity = parseInt(parseInt(quantity))
+      const nQuantity = parseInt(quantity)
       const response = await fetch(
         `${API_BASE_URL}/api/products/${product._id.$oid}/restock`,
         {
@@ -49,7 +51,7 @@ export const RestockDialog = ({ product, onRestock }) => {
           },
           body: JSON.stringify({
             quantity: nQuantity,
-            notes,
+            notes: notes.trim(),
           }),
         }
       )
@@ -70,14 +72,18 @@ export const RestockDialog = ({ product, onRestock }) => {
     }
   }
 
+  const handleFocus = (event) => {
+    event.target.select()
+  }
+
   return (
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+        className="inline-flex items-center justify-center w-8 h-8 text-gray-500 hover:text-green-600 rounded-lg hover:bg-green-50 transition-all duration-200"
+        title="Restock Product"
       >
-        <Plus className="w-4 h-4 mr-1" />
-        Restock
+        <Plus size={18} strokeWidth={1.5} />
       </button>
 
       <Modal
@@ -85,52 +91,111 @@ export const RestockDialog = ({ product, onRestock }) => {
         onClose={() => setIsOpen(false)}
         title={`Restock ${product.name}`}
       >
-        <div className="space-y-4">
-          <div className="flex items-center">
-            <label className="w-32">Current Stock:</label>
-            <span>{product.stock}</span>
+        <div className="space-y-6">
+          {/* Current Stock Display */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Boxes className="w-5 h-5 text-gray-400" />
+                <span className="text-sm font-medium text-gray-600">
+                  Current Stock
+                </span>
+              </div>
+              <span className="text-2xl font-semibold text-gray-900">
+                {product.stock}
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center">
-            <label className="w-32">Add Quantity:</label>
-            <input
-              type="number"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              min="1"
-              className="border rounded px-3 py-1 w-32"
-            />
+          {/* Quantity Input */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Add Quantity
+            </label>
+            <div className="relative">
+              <Plus
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={18}
+              />
+              <input
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                onFocus={handleFocus}
+                min="1"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="Enter quantity to add..."
+              />
+            </div>
           </div>
 
-          <div className="flex items-center">
-            <label className="w-32">Notes:</label>
-            <input
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Optional notes"
-              className="border rounded px-3 py-1 flex-1"
-            />
+          {/* Notes Input */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Notes
+            </label>
+            <div className="relative">
+              <History
+                className="absolute left-3 top-3 text-gray-400"
+                size={18}
+              />
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                onFocus={handleFocus}
+                placeholder="Optional: Add notes about this restock..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                rows="3"
+              />
+            </div>
           </div>
 
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
-              {error}
+          {/* New Stock Preview */}
+          {quantity && parseInt(quantity) > 0 && (
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-blue-600">
+                  New Stock Level
+                </span>
+                <span className="text-lg font-semibold text-blue-700">
+                  {product.stock + parseInt(quantity)}
+                </span>
+              </div>
             </div>
           )}
 
-          <div className="flex justify-end gap-2 mt-6">
+          {/* Error Display */}
+          {error && (
+            <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+              <AlertCircle size={18} />
+              <span className="text-sm">{error}</span>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-2">
             <button
               onClick={() => setIsOpen(false)}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200"
             >
               Cancel
             </button>
             <button
               onClick={handleRestock}
               disabled={!quantity || isLoading || parseInt(quantity) <= 0}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-700 hover:to-blue-600 disabled:from-blue-300 disabled:to-blue-300 disabled:cursor-not-allowed transform transition-all duration-200 hover:scale-[1.02] disabled:hover:scale-100"
             >
-              {isLoading ? "Processing..." : "Confirm Restock"}
+              {isLoading ? (
+                <>
+                  <span className="animate-spin">↻</span>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Plus size={18} />
+                  Confirm Restock
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -138,7 +203,6 @@ export const RestockDialog = ({ product, onRestock }) => {
     </>
   )
 }
-
 // RestockHistory Component
 export const RestockHistory = () => {
   const [restocks, setRestocks] = useState([])
