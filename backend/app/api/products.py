@@ -46,7 +46,7 @@ def add_product():
             "product": loads(dumps(product_data, json_options=RELAXED_JSON_OPTIONS))
         }), 201
     except Exception as e:
-        return jsonify({"success!!": False, "message": str(e)}), 500
+        return jsonify({"success!": False, "message": str(e)}), 500
 
 @products_bp.route('/api/products/<product_id>', methods=['GET'])
 def get_product(product_id):
