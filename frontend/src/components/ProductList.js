@@ -14,7 +14,9 @@ import {
 } from "lucide-react"
 import { RestockDialog, RestockHistory } from "./Restoks.js"
 
-const API_BASE_URL = "http://18.213.94.237:30002" || "http://192.168.49.2:30002"
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? "http://18.213.94.237:30002" 
+  : "http://192.168.49.2:30002"
 
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null

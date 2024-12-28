@@ -1,17 +1,7 @@
-import React, { useState } from "react"
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
-import Navbar from "./components/Navbar"
-import ProductList from "./components/ProductList"
-import { ThemeProvider } from "./contexts/ThemeContext"
-import "./App.css"
-import { RestockHistory } from "./components/Restoks"
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 
 function App() {
-  const [darkMode, setDarkMode] = useState(false)
-
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode)
-  }
+  // ... existing code ...
 
   return (
     <ThemeProvider value={{ darkMode, toggleDarkMode }}>
@@ -20,8 +10,8 @@ function App() {
           <Navbar />
           <main>
             <Routes>
+              <Route path="/" element={<Navigate to="/inventory" replace />} />
               <Route path="/inventory" element={<ProductList />} />
-              {/* <Route path="/restocking" element={<RestockHistory />} /> */}
             </Routes>
           </main>
         </div>
@@ -29,5 +19,3 @@ function App() {
     </ThemeProvider>
   )
 }
-
-export default App
