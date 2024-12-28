@@ -26,7 +26,7 @@ def get_products():
         products = list(products_collection.find())  # Fetch all products
         
         # Use RELAXED_JSON_OPTIONS for better ObjectId handling
-        return jsonify({"success!!": True, "products": loads(dumps(products, json_options=RELAXED_JSON_OPTIONS))}), 200
+        return jsonify({"success!!!!!!": True, "products": loads(dumps(products, json_options=RELAXED_JSON_OPTIONS))}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
