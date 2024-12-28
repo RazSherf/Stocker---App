@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react"
 import { Plus, X } from "lucide-react"
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"
+const API_BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? "http://18.213.94.237:30002"
+    : "http://192.168.49.2:30002"
 
 const Modal = ({ isOpen, onClose, children, title }) => {
   if (!isOpen) return null
