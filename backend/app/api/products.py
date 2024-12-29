@@ -84,7 +84,7 @@ def update_product(product_id):
             "product": loads(dumps(updated_product, json_options=RELAXED_JSON_OPTIONS))
         }), 200
     except Exception as e:
-        return jsonify({"success!!!": False, "message": str(e)}), 500
+        return jsonify({"success!": False, "message": str(e)}), 500
 
 @products_bp.route('/api/products/<product_id>', methods=['DELETE'])
 def delete_product(product_id):
