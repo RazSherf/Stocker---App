@@ -9,14 +9,19 @@ import {
   DollarSign,
   AlertCircle,
   Boxes,
+  Tags,
   History,
   ArrowUpDown,
 } from "lucide-react"
 import { RestockDialog, RestockHistory } from "./Restoks.js"
 
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? "http://18.213.94.237:30002" 
-  : "http://192.168.49.2:30002"
+const API_BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? "http://18.213.94.237:30002"
+    : "http://192.168.49.2:30002"
+
+// uncomment for development
+// const API_BASE_URL = "http://18.213.94.237:30002"
 
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null
@@ -352,17 +357,19 @@ const ProductList = () => {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50/80">
-                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-600">
-                  Name
+                <th className="px-6 py-4 text-sm font-semibold text-gray-600 w-[300px]">
+                  <div className="flex items-center justify-center w-full gap-3">
+                    <div className="w-[40px] flex justify-end">
+                      {/* Empty space to align with icon */}
+                    </div>
+                    <div className="flex-1">Name</div>
+                  </div>
                 </th>
                 <th className="px-6 py-4 text-center text-sm font-semibold text-gray-600">
                   Price
                 </th>
                 <th className="px-6 py-4 text-center text-sm font-semibold text-gray-600">
                   Category
-                </th>
-                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-600">
-                  Description
                 </th>
                 <th className="px-6 py-4 text-center text-sm font-semibold text-gray-600">
                   Stock
@@ -398,42 +405,75 @@ const ProductList = () => {
                     key={product._id.$oid}
                     className="hover:bg-gray-50/50 transition-colors"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                      {product.name}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center justify-center w-full gap-3">
+                        <div className="w-[40px] flex justify-end">
+                          <PackageOpen className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                        </div>
+                        <div className="flex flex-col flex-1">
+                          <span className="font-medium text-gray-900 leading-none mb-1">
+                            {product.name}
+                          </span>
+                          <span className="text-sm text-gray-500 leading-tight">
+                            {product.description}
+                          </span>
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-600">
-                      ${parseFloat(product.price).toFixed(2)}
+
+                    <td className="px-6 py-4 text-center">
+                      <span className="text-gray-900 font-small">
+                        ${parseFloat(product.price).toFixed(2)}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-gray-600 truncate max-w-xs">
-                      {product.category}
+                    <td className="px-6 py-4">
+                      <div className="flex justify-center items-center gap-2">
+                        <Tags className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                          {product.category}
+                        </span>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 text-gray-600 truncate max-w-xs">
-                      {product.description}
+                    <td className="px-6 py-4">
+                      <div className="flex justify-center">
+                        <div
+                          className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            product.stock > 20
+                              ? "bg-green-50 text-green-600 border border-green-200"
+                              : product.stock > 10
+                              ? "bg-yellow-50 text-yellow-600 border border-yellow-200"
+                              : "bg-orange-50 text-orange-600 border border-orange-200"
+                          }`}
+                        >
+                          {product.stock > 20
+                            ? `${product.stock} In Stock`
+                            : `${product.stock} Low Stock`}
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 text-gray-600 truncate max-w-xs">
-                      {product.stock}
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-3">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-center gap-2">
                         <RestockDialog
                           product={product}
                           onRestock={(data) =>
                             handleRestock(product._id, data.new_stock_level)
                           }
                         />
-                      </td>
-                      <button
-                        onClick={() => handleEdit(product)}
-                        className="text-blue-600 hover:text-blue-800 p-1 hover:bg-blue-50 rounded-lg transition-all inline-flex items-center"
-                      >
-                        <Pencil size={18} strokeWidth={2} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(product._id.$oid)}
-                        className="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 rounded-lg transition-all inline-flex items-center"
-                      >
-                        <Trash size={18} strokeWidth={2} />
-                      </button>
+                        <button
+                          onClick={() => handleEdit(product)}
+                          className="inline-flex items-center justify-center w-8 h-8 text-gray-500 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all duration-200"
+                          title="Edit Product"
+                        >
+                          <Pencil size={16} strokeWidth={1.5} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(product._id.$oid)}
+                          className="inline-flex items-center justify-center w-8 h-8 text-gray-500 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all duration-200"
+                          title="Delete Product"
+                        >
+                          <Trash size={16} strokeWidth={1.5} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

@@ -71,11 +71,10 @@ def metrics():
 @products_bp.route('/api/products', methods=['GET'])
 def get_products():
     try:
-        products = list(products_collection.find())
-        return jsonify({
-            "success": True,
-            "products": loads(dumps(products, json_options=RELAXED_JSON_OPTIONS))
-        }), 200
+        products = list(products_collection.find())  # Fetch all products
+        
+        # Use RELAXED_JSON_OPTIONS for better ObjectId handling
+        return jsonify({"success!": True, "products": loads(dumps(products, json_options=RELAXED_JSON_OPTIONS))}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
@@ -131,7 +130,7 @@ def update_product(product_id):
             "product": loads(dumps(updated_product, json_options=RELAXED_JSON_OPTIONS))
         }), 200
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
+        return jsonify({"success!!": False, "message": str(e)}), 500
 
 @products_bp.route('/api/products/<product_id>', methods=['DELETE'])
 def delete_product(product_id):

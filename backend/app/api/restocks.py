@@ -28,9 +28,11 @@ restock_bp = Blueprint('restock', __name__)
 def restock_product(product_id):
     try:
         restock_data = request.json
+        
         if not restock_data or 'quantity' not in restock_data:
             return jsonify({"success": False, "message": "Quantity is required"}), 400
         
+        # Ensure quantity is an integer
         quantity = int(restock_data.get('quantity'))
         if quantity <= 0:
             return jsonify({"success": False, "message": "Quantity must be positive"}), 400
@@ -40,38 +42,41 @@ def restock_product(product_id):
         if not product:
             return jsonify({"success": False, "message": "Product not found"}), 404
 
-        # Calculate new stock level
-        current_stock = product.get('stock', 0)
+        # Ensure current_stock is an integer
+        current_stock = int(product.get('stock', 0))
         new_stock = current_stock + quantity
 
-        # Create restock log
+        # Create restock log with explicit types
         restock_log = {
             "product_id": ObjectId(product_id),
-            "quantity": quantity,
-            "previous_stock": current_stock,
-            "new_stock": new_stock,
+            "quantity": int(quantity),
+            "previous_stock": int(current_stock),
+            "new_stock": int(new_stock),
             "timestamp": datetime.utcnow(),
-            "notes": restock_data.get('notes', ''),
+            "notes": str(restock_data.get('notes', '')),
             "status": "completed"
         }
         
         # Insert restock log
-        restock_logs_collection.insert_one(restock_log)
+        result = restock_logs_collection.insert_one(restock_log)
         
-        # Update product stock
+        # Update product stock with explicit integer
         products_collection.update_one(
             {"_id": ObjectId(product_id)},
-            {"$set": {"stock": new_stock}}
+            {"$set": {"stock": int(new_stock)}}
         )
 
         return jsonify({
             "success": True,
             "message": "Restock completed",
-            "new_stock_level": new_stock,
-            "restock_id": str(restock_log.get('_id'))
+            "new_stock_level": int(new_stock),
+            "restock_id": str(result.inserted_id)  # Convert ObjectId to string
         }), 200
 
+    except ValueError as e:
+        return jsonify({"success": False, "message": "Invalid number format"}), 400
     except Exception as e:
+        print(f"Error in restock: {str(e)}")  # Add logging for debugging
         return jsonify({"success": False, "message": str(e)}), 500
 
 @restock_bp.route('/api/restocks', methods=['GET'])
