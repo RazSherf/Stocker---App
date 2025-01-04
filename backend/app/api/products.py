@@ -66,6 +66,9 @@ def after_request(response):
 # Metrics endpoint for Prometheus to scrape
 @app.route('/metrics')
 def metrics():
+    print("Metrics endpoint called")  # Add this debug line
+    metrics_data = generate_latest()
+    print(f"Generated metrics: {metrics_data[:100]}...")  # Print first 100 chars of metrics
     return generate_latest(), 200, {'Content-Type': CONTENT_TYPE_LATEST}
 
 @products_bp.route('/api/products', methods=['GET'])
