@@ -13,15 +13,15 @@ import {
   History,
   ArrowUpDown,
 } from "lucide-react"
-import { RestockDialog, RestockHistory } from "./Restoks.js"
-
-const API_BASE_URL =
-  process.env.NODE_ENV === "production"
-    ? "http://18.213.94.237:30002"
-    : "http://192.168.49.2:30002"
+import Header from "./components/Header"
+import { RestockDialog } from "../Restocks/Restocks"
+// const API_BASE_URL =
+//   process.env.NODE_ENV === "production"
+//     ? "http://18.213.94.237:30002"
+//     : "http://192.168.49.2:30002"
 
 // uncomment for development
-// const API_BASE_URL = "http://18.213.94.237:30002"
+const API_BASE_URL = "http://18.213.94.237:30002"
 
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null
@@ -327,33 +327,17 @@ const ProductList = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <div className="relative flex-1 w-full sm:max-w-md">
-          <Search
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-            size={20}
-          />
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={handleFocus}
-            className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
-          />
-        </div>
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 via-blue-600 to-blue-500 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:via-blue-700 hover:to-blue-600 transform transition-all duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md w-full sm:w-auto justify-center sm:justify-start"
-        >
-          <Plus size={20} />
-          Add Product
-        </button>
-      </div>
+    <div className="space-y-2">
+      <Header
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onAddProduct={() => setIsAddModalOpen(true)}
+        totalProducts={products.length}
+        lastUpdated={new Date()} // Pass your last updated timestamp
+      />
 
-      <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="content-container bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto card ">
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50/80">
