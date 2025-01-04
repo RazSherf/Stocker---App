@@ -32,7 +32,7 @@ export const Header = ({
             </div>
           </div>
 
-          {/* Search and Add Product Row */}
+          {/* Search and Add Product Row  */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div className="relative flex-1 group">
               <div className="absolute left-0 inset-y-0 flex items-center pl-3">
