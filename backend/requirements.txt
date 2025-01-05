@@ -4,3 +4,4 @@ python-dotenv==0.21.0
 pytest==7.2.0
 flask-cors==3.0.10
 prometheus_client==0.17.1
+psutil
