@@ -166,7 +166,7 @@ export const RestockDialog = ({ product, onRestock }) => {
                   New Stock Level
                 </span>
                 <span className="text-lg font-semibold text-blue-700">
-                  {product.stock + parseInt(quantity)}
+                  {parseInt(product.stock) + parseInt(quantity)}
                 </span>
               </div>
             </div>

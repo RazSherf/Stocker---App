@@ -167,7 +167,7 @@ export const RestockHistory = () => {
           )}
 
           <div className="content-container verflow-x-auto">
-            <div className="card">
+            <div className="">
               <table className="w-full" role="table">
                 <thead>
                   <tr className="bg-gray-50">

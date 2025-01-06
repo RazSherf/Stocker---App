@@ -28,7 +28,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl w-full max-w-md p-6 relative transform transition-all duration-200 scale-100">
+      <div className="bg-white rounded-xl w-full max-w-md p-6 relative transform transition-all duration-200 scale-100 max-h-[90vh] overflow-y-auto">
         <div className="absolute right-4 top-4">
           <button
             onClick={onClose}
@@ -337,7 +337,7 @@ const ProductList = () => {
       />
 
       <div className="content-container bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto card ">
+        <div className="overflow-x-auto  ">
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50/80">
