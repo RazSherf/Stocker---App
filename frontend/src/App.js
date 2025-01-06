@@ -1,11 +1,16 @@
 import React, { useState } from "react"
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom"
 import Navbar from "./components/Navbar"
-import ProductList from "./components/ProductList"
 import { ThemeProvider } from "./contexts/ThemeContext"
 import "./App.css"
-import { RestockHistory } from "./components/Restoks"
-
+import ProductList from "./components/Products/ProductList"
+import { RestockHistory } from "./components/Restocks/RestokHistory"
+import WorkInProgress from "./components/WorkInProgress/WorkInProgress"
 function App() {
   const [darkMode, setDarkMode] = useState(false)
 
@@ -19,11 +24,34 @@ function App() {
         <div className={`App ${darkMode ? "dark-mode" : ""}`}>
           <Navbar />
           <main>
-            <Routes>
-              <Route path="/" element={<Navigate to="/inventory" replace />} />
-              <Route path="/inventory" element={<ProductList />} />
-              <Route path="/restocking" element={<RestockHistory />} />
-            </Routes>
+            <div className="content-container">
+              <Routes>
+                <Route
+                  path="/"
+                  element={<Navigate to="/inventory" replace />}
+                />
+                <Route path="/inventory" element={<ProductList />} />
+                <Route path="/restocking" element={<RestockHistory />} />
+                <Route
+                  path="/analytics"
+                  element={
+                    <WorkInProgress
+                      title="Analytics Page"
+                      message="Coming Soon"
+                    />
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <WorkInProgress
+                      title="Profile page"
+                      message="Coming Soon!"
+                    />
+                  }
+                />
+              </Routes>
+            </div>
           </main>
         </div>
       </Router>
