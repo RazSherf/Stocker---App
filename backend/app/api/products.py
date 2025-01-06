@@ -5,25 +5,13 @@ from bson.objectid import ObjectId
 from bson.json_util import dumps, RELAXED_JSON_OPTIONS
 from json import loads
 import os
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 import time
 
 # Initialize Flask app
+
 app = Flask(__name__)
 CORS(app)
 
-# Initialize Prometheus metrics
-REQUEST_COUNT = Counter(
-    'http_requests_total',
-    'Total HTTP requests',
-    ['method', 'endpoint', 'status']
-)
-
-REQUEST_LATENCY = Histogram(
-    'http_request_duration_seconds',
-    'HTTP request latency',
-    ['method', 'endpoint']
-)
 
 # MongoDB setup
 MONGO_URI = os.environ.get('MONGODB_URI', "mongodb://admin:password@mongodb:27017/productdb?authSource=admin")
@@ -34,42 +22,7 @@ products_collection = db['products']
 # Create a Blueprint for the products
 products_bp = Blueprint('products', __name__)
 
-# Middleware to track metrics
-@app.before_request
-def before_request():
-    request.start_time = time.time()
 
-@app.after_request
-def after_request(response):
-    # Extract endpoint from request
-    if request.endpoint:
-        endpoint = request.endpoint
-    else:
-        endpoint = 'unknown'
-    
-    # Record request count
-    REQUEST_COUNT.labels(
-        method=request.method,
-        endpoint=endpoint,
-        status=response.status_code
-    ).inc()
-    
-    # Record request latency
-    latency = time.time() - request.start_time
-    REQUEST_LATENCY.labels(
-        method=request.method,
-        endpoint=endpoint
-    ).observe(latency)
-    
-    return response
-
-# Metrics endpoint for Prometheus to scrape
-@app.route('/metrics')
-def metrics():
-    print("Metrics endpoint called")  # Add this debug line
-    metrics_data = generate_latest()
-    print(f"Generated metrics: {metrics_data[:100]}...")  # Print first 100 chars of metrics
-    return generate_latest(), 200, {'Content-Type': CONTENT_TYPE_LATEST}
 
 @products_bp.route('/api/products', methods=['GET'])
 def get_products():
@@ -79,7 +32,7 @@ def get_products():
         # Use RELAXED_JSON_OPTIONS for better ObjectId handling
         return jsonify({"success!": True, "products": loads(dumps(products, json_options=RELAXED_JSON_OPTIONS))}), 200
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
+        return jsonify({"success": False, "message": str(e)}), 500 
 
 @products_bp.route('/api/products', methods=['POST'])
 def add_product():
@@ -149,5 +102,3 @@ def delete_product(product_id):
 # Register the Blueprint
 app.register_blueprint(products_bp)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
