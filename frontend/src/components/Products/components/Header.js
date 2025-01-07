@@ -54,25 +54,25 @@ export const Header = ({
               />
             </div>
             <button
-            onClick={onAddProduct}
-            className="group inline-flex items-center whitespace-nowrap h-11 px-5
-              bg-gradient-to-r from-red-500 via-red-600 to-rose-500 
-              hover:from-red-600 hover:via-red-700 hover:to-rose-600
-              active:from-red-700 active:via-red-800 active:to-rose-700
-              text-white font-medium rounded-lg
-              transition-all duration-300 ease-out
-              shadow-[0_4px_12px_rgba(239,68,68,0.25)]
-              hover:shadow-[0_8px_24px_rgba(239,68,68,0.4)]
-              active:shadow-[0_2px_6px_rgba(239,68,68,0.25)]
-              active:translate-y-0.5
-              focus:outline-none focus:ring-2 focus:ring-red-500/40 focus:ring-offset-2
-              relative overflow-hidden
-              before:absolute before:inset-0
-              before:bg-gradient-to-r before:from-white/0 before:via-white/20 before:to-white/0
-              before:translate-x-[-200%] hover:before:translate-x-[200%]
-              before:transition-transform before:duration-1000
-              before:ease-out before:rounded-lg"
-          >
+              onClick={onAddProduct}
+              className="group inline-flex items-center whitespace-nowrap h-11 px-5
+            bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-500 
+            hover:from-blue-600 hover:via-blue-700 hover:to-indigo-600
+            active:from-blue-700 active:via-blue-800 active:to-indigo-700
+            text-white font-medium rounded-lg
+            transition-all duration-300 ease-out
+            shadow-[0_4px_12px_rgba(59,130,246,0.25)]
+            hover:shadow-[0_8px_24px_rgba(59,130,246,0.4)]
+            active:shadow-[0_2px_6px_rgba(59,130,246,0.25)]
+            active:translate-y-0.5
+            focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-2
+            relative overflow-hidden
+            before:absolute before:inset-0
+            before:bg-gradient-to-r before:from-white/0 before:via-white/20 before:to-white/0
+            before:translate-x-[-200%] hover:before:translate-x-[200%]
+            before:transition-transform before:duration-1000
+            before:ease-out before:rounded-lg"
+            >
               <Plus
                 className="w-5 h-5 mr-2 transition-transform duration-300 ease-out 
                    group-hover:scale-110"
