@@ -1,201 +1,150 @@
-Smart Retail Inventory System
+# Smart Retail Inventory System
 
-Overview
+> **Real‑time inventory management and analytics for modern retail chains**
 
-The Smart Retail Inventory System is an advanced inventory management solution tailored for retail store chains. It provides real-time stock level tracking, low-stock notifications, and restocking capabilities, helping store managers optimize inventory processes.
+---
 
-Features
+## Features
 
-Inventory Management
+* **Inventory Management** – CRUD endpoints to manage products and stock levels.
+* **Restocking Operations** – Track and log restock events with audit history.
+* **Low‑Stock Alerts** – Identify products below threshold for timely replenishment.
+* **Analytics & Trends** – Visualize stock movement to support data‑driven decisions.
+* **Containerized** – Docker‑first workflow with `docker‑compose` for local dev.
+* **Cloud‑Ready** – Kubernetes manifests and AWS deployment guidance included.
+  
+---
 
-View Products:
+## Tech Stack
 
-GET /api/products: Retrieve a list of all products with stock levels.
+| Layer                | Technology                     |
+| -------------------- | ------------------------------ |
+| **API**              | Python 3.8 • Flask RESTX       |
+| **Database**         | MongoDB (Atlas or self‑hosted) |
+| **Containerization** | Docker • Docker Compose        |
+| **Orchestration**    | Kubernetes (helm‑ready)        |
+| **Cloud**            | AWS (EKS / EC2 + Docker)       |
+| **Observability**    | Prometheus • Grafana           |
+| **CI/CD**            | GitHub Actions /Jenkins        |
 
-GET /api/products/<product_id>: View details of a specific product.
+---
 
-Manage Products:
+## Quick Start
 
-POST /api/products: Add a new product with details such as name, SKU, and initial stock level.
+```bash
+# Clone
+$ git clone https://github.com/<your-org>/smart-retail-inventory.git
+$ cd smart-retail-inventory
 
-PUT /api/products/<product_id>: Update product details or stock levels.
+# Local Python env
+$ python3 -m venv venv && source venv/bin/activate
+$ pip install -r requirements.txt
 
-DELETE /api/products/<product_id>: Remove a product from the inventory.
+# Run API
+$ flask run --debug  # http://localhost:5000
+```
 
-Restocking Operations
+### With Docker
 
-Restock Products:
+```bash
+# Build & Run
+$ docker build -t inventory-backend .
+$ docker run -p 5000:5000 inventory-backend
 
-POST /api/products/<product_id>/restock: Add stock to a product with a specified quantity.
+# Or spin up API + MongoDB
+$ docker-compose up
+```
 
-View Restocking Logs:
+---
 
-GET /api/restocks: Fetch a history of all restocking activities.
+## API Reference
 
-Analytics
+<details>
+<summary>Inventory Management</summary>
 
-Low Stock Alerts:
+| Verb   | Endpoint             | Description       |
+| ------ | -------------------- | ----------------- |
+| GET    | `/api/products`      | List all products |
+| GET    | `/api/products/<id>` | Product details   |
+| POST   | `/api/products`      | Add new product   |
+| PUT    | `/api/products/<id>` | Update product    |
+| DELETE | `/api/products/<id>` | Delete product    |
 
-GET /api/products/low-stock: Fetch products with stock below a predefined threshold.
+</details>
 
-Stock Trends:
+<details>
+<summary>Restocking</summary>
 
-GET /api/products/analytics: View stock analytics and trends for data-driven decisions.
+| Verb | Endpoint                     | Description        |
+| ---- | ---------------------------- | ------------------ |
+| POST | `/api/products/<id>/restock` | Add stock quantity |
+| GET  | `/api/restocks`              | Restock history    |
 
-Tech Stack
+</details>
 
-Application Development
+<details>
+<summary>Analytics</summary>
 
-Backend: Python Flask (REST API for CRUD operations and analytics).
+| Verb | Endpoint                  | Description      |
+| ---- | ------------------------- | ---------------- |
+| GET  | `/api/products/low-stock` | Low‑stock list   |
+| GET  | `/api/products/analytics` | Stock trend data |
 
-Database: MongoDB (to store products, stock levels, and restocking logs).
+</details>
 
-Containerization
+> **Note:** Authentication & rate‑limiting can be enabled via middleware (see `app/extensions/`).
 
-Docker:
+---
 
-Separate Dockerfiles for Flask backend.
+## Deployment
 
-Use docker-compose for linking services in local development.
+### Kubernetes
 
-Deployment
+```bash
+# Apply manifests
+$ kubectl apply -f k8s/
 
-AWS:
+# Verify
+$ kubectl get all -l app=smart-retail-inventory
+```
 
-Host the application using AWS services.
+Includes Deployments, Services, ConfigMaps, Secrets and an Ingress for external access.
 
-Kubernetes:
+### AWS (EC2 demo)
 
-ConfigMaps for application-specific settings.
+1. Provision an EC2 instance with Docker installed.
+2. Pull the latest image:
 
-Secrets for MongoDB credentials.
+   ```bash
+   docker pull <dockerhub-username>/inventory-backend:latest
+   ```
+3. Run container with MongoDB connection env vars.
+4. Point your ALB / NLB to the instance or migrate to EKS for production.
 
-Deployments and Services for managing Flask backend and MongoDB.
+See [`docs/deployment.md`](docs/deployment.md) for step‑by‑step guides.
 
-Ingress for external access to the app.
+---
 
-Monitoring
+## Monitoring & Observability
 
-Prometheus:
+| Metric          | Source              | Grafana Panel         |
+| --------------- | ------------------- | --------------------- |
+| API latency     | Prometheus Exporter | *API Latency (ms)*    |
+| CPU / Memory    | cAdvisor            | *Container Resources* |
+| Low‑stock count | Custom Collector    | *Inventory Health*    |
 
-Monitor API response times and container resource usage.
+Dashboards are provisioned automatically via Grafana config in `k8s/grafana/`.
 
-Grafana:
+---
 
-Dashboards for stock trends and API latency.
+## Repository Structure
 
-CI/CD
-
-Pipeline Stages:
-
-Lint Flask code.
-
-Run unit tests for backend logic.
-
-Build and push Docker images to Docker Hub.
-
-Deploy to Kubernetes using manifests.
-
-Perform live API testing.
-
-API Endpoints
-
-Inventory Management
-
-GET /api/products: List all products.
-
-GET /api/products/<product_id>: View details of a specific product.
-
-POST /api/products: Add a new product (JSON payload required).
-
-PUT /api/products/<product_id>: Update product details.
-
-DELETE /api/products/<product_id>: Remove a product.
-
-Restocking Operations
-
-POST /api/products/<product_id>/restock: Add stock to a product (quantity in JSON payload).
-
-GET /api/restocks: View the restocking history.
-
-Analytics
-
-GET /api/products/low-stock: Fetch products below the stock threshold.
-
-GET /api/products/analytics: Retrieve stock trend data.
-
-Local Development
-
-Prerequisites
-
-Python 3.8+
-
-Docker
-
-MongoDB instance
-
-AWS CLI (for deployment)
-
-Steps
-
-Clone the repository:
-
-git clone https://github.com/your-username/smart-retail-inventory.git
-cd smart-retail-inventory
-
-Set up a virtual environment and install dependencies:
-
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-Run the Flask server:
-
-flask run
-
-(Optional) Start MongoDB locally or connect to an existing instance.
-
-Using Docker
-
-Build and run the backend service:
-
-docker build -t inventory-backend .
-docker run -p 5000:5000 inventory-backend
-
-Use docker-compose for linked services:
-
-docker-compose up
-
-Deployment
-
-Kubernetes (Optional)
-
-Apply Kubernetes manifests:
-
-kubectl apply -f k8s/
-
-Access the application via the configured Ingress.
-
-AWS
-
-Use an EC2 instance with Docker to host the app.
-
-Connect the MongoDB database via AWS-hosted MongoDB service or self-hosted.
-
-Monitoring and Analytics
-
-Prometheus: Tracks API performance and resource usage.
-
-Grafana: Provides visual dashboards for actionable insights.
-
-Repository Structure
-
-app/: Contains Flask backend code.
-
-docker/: Dockerfiles for containerization.
-
-k8s/: Kubernetes manifests for deployment.
-
-ci-cd/: Jenkins pipeline configurations.
-
-docs/: Documentation and guides.
+```
+smart-retail-inventory/
+├── app/               # Flask application code
+├── docker/            # Dockerfiles & compose
+├── k8s/               # Kubernetes manifests
+├── ci-cd/             # Pipeline configs (GitHub Actions / Jenkins)
+├── docs/              # Additional documentation
+└── README.md
+```
